@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login as auth_login
 from django.contrib import messages
-from .models import CustomUser
+from .models import CustomUser, Wallet, Bus
 
 DEFAULT_USER_TYPE = 'passenger'  
 
@@ -67,5 +67,26 @@ def login(request):
         return redirect('login')
 
     return render(request, 'login.html')
+
+def add_funds(request):
+    if request.method == 'POST':
+        amount = float(request.POST['amount'])
+        request.user.wallet_balance += amount
+        request.user.save()
+
+        Wallet.objects.create(user=request.user, amount=amount, transaction_type='add')
+        messages.success(request, 'Funds added successfully!')
+        return redirect('wallet')
+
+    return render(request, 'add_funds.html')
+
+def add_bus(request):
+    if request.method == 'POST':
+        bus_number = request.POST['bus_number']
+        total_seats = request.POST['total_seats']
+        departure_time = request.POST['departure_time']
+        arrival_time = request.POST['arrival_time']
+
+        bus = Bus.objects.create(bus_number=bus_number, total_seats=total_seats)
 
 
